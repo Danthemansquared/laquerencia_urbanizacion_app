@@ -3,5 +3,6 @@ pandas
 numpy
 openpyxl
 altair
+requests
 
 

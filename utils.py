@@ -62,9 +62,89 @@ MONTH_NAMES = {
     12: "Diciembre",
 }
 
+def load_data_from_url(url: str) -> pd.DataFrame:
+    """
+    Carga datos desde una URL (Google Drive, Google Sheets, Dropbox, etc.)
+    
+    Args:
+        url: URL del archivo Excel o Google Sheets
+    
+    Returns:
+        pd.DataFrame con los datos cargados
+    
+    Raises:
+        Exception: Si no se puede descargar o leer el archivo
+    """
+    import requests
+    import io
+    
+    # Si es Google Sheets, convertir a formato de exportación Excel
+    if "docs.google.com/spreadsheets" in url:
+        # Extraer el ID del spreadsheet
+        if "/d/" in url:
+            sheet_id = url.split("/d/")[1].split("/")[0]
+        elif "id=" in url:
+            sheet_id = url.split("id=")[1].split("&")[0]
+        else:
+            raise ValueError("URL de Google Sheets no válida. Debe contener '/d/' o 'id='")
+        
+        # Convertir a formato de exportación Excel
+        url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx"
+    
+    # Si es Google Drive, convertir a formato de descarga directa
+    elif "drive.google.com" in url:
+        # Extraer el ID del archivo
+        if "/d/" in url:
+            file_id = url.split("/d/")[1].split("/")[0]
+        elif "id=" in url:
+            file_id = url.split("id=")[1].split("&")[0]
+        else:
+            raise ValueError("URL de Google Drive no válida. Debe contener '/d/' o 'id='")
+        
+        # Usar formato de descarga directa
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    
+    # Descargar el archivo
+    try:
+        response = requests.get(url, timeout=60, allow_redirects=True)
+        response.raise_for_status()
+        
+        # Verificar que el contenido sea válido
+        if len(response.content) == 0:
+            raise ValueError("El archivo descargado está vacío")
+        
+        # Verificar el Content-Type para asegurar que es un archivo Excel
+        content_type = response.headers.get('Content-Type', '').lower()
+        if 'html' in content_type and len(response.content) < 10000:
+            # Podría ser una página de error de Google
+            raise ValueError("No se pudo descargar el archivo. Verifica que el archivo esté compartido como 'Cualquiera con el enlace'")
+        
+        # Leer como Excel especificando el engine explícitamente
+        file_like = io.BytesIO(response.content)
+        return load_data(file_like)
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error al descargar el archivo desde la URL: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Error al procesar el archivo: {str(e)}")
+
+
 def load_data(file) -> pd.DataFrame:
     """Carga y prepara el archivo de Urbanización."""
-    df = pd.read_excel(file)
+    # Si es una URL string, usar load_data_from_url
+    if isinstance(file, str) and (file.startswith("http://") or file.startswith("https://")):
+        return load_data_from_url(file)
+    
+    # Si es un objeto file-like o path, leer directamente
+    # Especificar engine explícitamente para evitar errores de formato
+    try:
+        df = pd.read_excel(file, engine='openpyxl')
+    except Exception:
+        # Si falla con openpyxl, intentar con xlrd para archivos .xls antiguos
+        try:
+            df = pd.read_excel(file, engine='xlrd')
+        except Exception:
+            # Último intento sin especificar engine
+            df = pd.read_excel(file)
 
     # Validación mínima de columnas
     expected_cols = {
