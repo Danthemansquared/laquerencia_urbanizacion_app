@@ -58,4 +58,3 @@ El archivo Excel debe contener las siguientes columnas:
 - Monto
 - Categoría
 - Concepto Russildi
-
