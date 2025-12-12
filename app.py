@@ -15,11 +15,10 @@ st.markdown(
     """
 Esta app te ayuda a analizar los **egresos de urbanización** a partir de tu archivo de Excel
 ya curado (donde tú llenas *Categoría* y *Concepto Russildi*).
-
-1. Sube el archivo de egresos o proporciona una URL.
-2. Usa las pestañas de arriba para explorar: Overview, Conceptos, Proveedores, Anomalías y Explorer.
 """
 )
+
+st.caption("💡 **Tip:** Sube el archivo de egresos o proporciona una URL. Usa las pestañas de arriba para explorar: Overview, Conceptos, Proveedores, Anomalías y Explorer.")
 
 # Intentar cargar automáticamente desde URL si está configurada
 auto_load_url = None
@@ -62,24 +61,22 @@ with tab1:
     uploaded_file = st.file_uploader("Sube el archivo de Urbanización (Excel)", type=["xlsx"])
 
 with tab2:
-    st.markdown("""
-    **Carga desde URL**
-    
-    Puedes compartir un enlace a tu archivo Excel desde:
-    - **Google Drive**: Comparte el archivo como "Cualquiera con el enlace" y copia el enlace
-    - **Dropbox**: Obtén el enlace de descarga directa
-    - **Cualquier servidor web**: URL directa al archivo .xlsx
-    
-    **Para Google Sheets:**
-    1. Abre tu hoja de cálculo en Google Sheets
-    2. Click en "Compartir" → Cambiar a "Cualquiera con el enlace"
-    3. Copia el enlace completo (se convertirá automáticamente a Excel)
-    
-    **Para Google Drive (archivos .xlsx):**
-    1. Sube tu archivo Excel a Google Drive
-    2. Click derecho → Compartir → Cambiar a "Cualquiera con el enlace"
-    3. Copia el enlace completo
-    """)
+    with st.container():
+        st.markdown("#### 📋 Carga desde URL")
+        st.caption("Puedes compartir un enlace a tu archivo Excel desde Google Drive, Google Sheets, Dropbox o cualquier servidor web.")
+        
+        with st.expander("ℹ️ Instrucciones detalladas", expanded=False):
+            st.markdown("""
+            **Para Google Sheets:**
+            1. Abre tu hoja de cálculo en Google Sheets
+            2. Click en "Compartir" → Cambiar a "Cualquiera con el enlace"
+            3. Copia el enlace completo (se convertirá automáticamente a Excel)
+            
+            **Para Google Drive (archivos .xlsx):**
+            1. Sube tu archivo Excel a Google Drive
+            2. Click derecho → Compartir → Cambiar a "Cualquiera con el enlace"
+            3. Copia el enlace completo
+            """)
     
     # Obtener URL por defecto de forma segura
     default_url = st.session_state.get("data_url", "")
@@ -92,8 +89,8 @@ with tab2:
     data_url = st.text_input(
         "URL del archivo Excel",
         value=default_url,
-        help="Pega la URL completa del archivo Excel",
-        placeholder="https://drive.google.com/file/d/... o https://..."
+        help="Pega la URL completa del archivo Excel o Google Sheets",
+        placeholder="https://docs.google.com/spreadsheets/d/... o https://drive.google.com/file/d/..."
     )
     
     col_url1, col_url2 = st.columns([3, 1])
@@ -193,12 +190,16 @@ if uploaded_file is not None:
                             status = "✅" if mapeado != "NO MAPEADO" else "❌"
                             st.write(f"- {status} {mes_raw}: {count} registros → {mapeado if mapeado != 'NO MAPEADO' else 'NO RECONOCIDO'}")
 
-        st.dataframe(
-            df.head(20),
-            use_container_width=True,
-        )
+        with st.container():
+            st.subheader("📊 Vista previa de datos")
+            st.caption(f"Mostrando los primeros 20 registros de {len(df)} totales")
+            st.dataframe(
+                df.head(20),
+                use_container_width=True,
+            )
+        
         st.info(
-            "Puedes navegar a las otras páginas desde el menú lateral (multipage) o el menú superior dependiendo de tu configuración."
+            "💡 Puedes navegar a las otras páginas desde el menú lateral (multipage) o el menú superior dependiendo de tu configuración."
         )
     except Exception as e:
         st.error(f"Error al cargar el archivo: {e}")
@@ -274,12 +275,16 @@ elif "df" in st.session_state and st.session_state.get("df") is not None:
                         status = "✅" if mapeado != "NO MAPEADO" else "❌"
                         st.write(f"- {status} {mes_raw}: {count} registros → {mapeado if mapeado != 'NO MAPEADO' else 'NO RECONOCIDO'}")
 
-    st.dataframe(
-        df.head(20),
-        use_container_width=True,
-    )
+    with st.container():
+        st.subheader("📊 Vista previa de datos")
+        st.caption(f"Mostrando los primeros 20 registros de {len(df)} totales")
+        st.dataframe(
+            df.head(20),
+            use_container_width=True,
+        )
+    
     st.info(
-        "Puedes navegar a las otras páginas desde el menú lateral (multipage) o el menú superior dependiendo de tu configuración."
+        "💡 Puedes navegar a las otras páginas desde el menú lateral (multipage) o el menú superior dependiendo de tu configuración."
     )
 else:
     st.info("👆 Sube un archivo o proporciona una URL para comenzar.")

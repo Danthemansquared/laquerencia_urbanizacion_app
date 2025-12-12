@@ -15,10 +15,13 @@ def main():
         st.warning("No hay datos con los filtros seleccionados.")
         return
 
-    st.markdown("Usa los filtros de la barra lateral y el buscador para explorar movimientos específicos.")
+    st.caption("💡 Usa los filtros de la barra lateral y el buscador para explorar movimientos específicos.")
 
     # Buscador de texto
-    search_text = st.text_input("Buscar texto en Concepto o Proveedor")
+    search_text = st.text_input(
+        "🔍 Buscar texto en Concepto o Proveedor",
+        help="Busca en los campos 'Concepto' y 'Proveedor' de forma simultánea"
+    )
 
     df_view = filtered.copy()
     if search_text:
@@ -29,13 +32,18 @@ def main():
         df_view = df_view[mask]
 
     # Checkboxes para calidad
-    col1, col2, col3 = st.columns(3)
+    st.markdown("#### 🔍 Filtros de calidad de datos")
+    col1, col2 = st.columns(2)
     with col1:
-        solo_sin_categoria = st.checkbox("Solo sin Categoría")
+        solo_sin_categoria = st.checkbox(
+            "Solo sin Categoría",
+            help="Muestra únicamente registros que no tienen categoría asignada"
+        )
     with col2:
-        solo_sin_concepto_r = st.checkbox("Solo sin Concepto Russildi")
-    with col3:
-        st.write("")  # placeholder
+        solo_sin_concepto_r = st.checkbox(
+            "Solo sin Concepto Russildi",
+            help="Muestra únicamente registros que no tienen Concepto Russildi asignado"
+        )
 
     if solo_sin_categoria:
         df_view = df_view[df_view["Categoría"].isna() | (df_view["Categoría"] == "")]
@@ -45,8 +53,16 @@ def main():
             | (df_view["Concepto Russildi"] == "")
         ]
 
-    st.write(f"Movimientos encontrados: {len(df_view)}")
-
+    # Mostrar contador
+    col_count1, col_count2 = st.columns([1, 4])
+    with col_count1:
+        st.metric("Movimientos encontrados", len(df_view))
+    
+    if df_view.empty:
+        st.warning("No se encontraron movimientos con los filtros seleccionados.")
+        return
+    
+    # Preparar datos para visualización
     df_view_display = df_view[
         [
             "Mes",
@@ -66,7 +82,12 @@ def main():
         lambda x: f"${x:,.2f}" if pd.notna(x) else "$0.00"
     )
     
-    st.dataframe(df_view_display, use_container_width=True)
+    # Usar st.data_editor para mejor interactividad (solo lectura)
+    st.dataframe(
+        df_view_display,
+        use_container_width=True,
+        height=400,
+    )
 
     # Export
     if not df_view.empty:

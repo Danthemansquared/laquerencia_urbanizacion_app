@@ -10,6 +10,7 @@ def main():
     df = st.session_state["df"]
 
     st.title("Overview – Ritmo y control del gasto")
+    st.caption("Vista general del gasto con análisis de tendencias y narrativa automática")
 
     filtered = apply_global_filters(df)
 

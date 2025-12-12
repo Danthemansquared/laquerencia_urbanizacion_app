@@ -9,6 +9,7 @@ def main():
     df = st.session_state["df"]
 
     st.title("Proveedores – Concentración del gasto")
+    st.caption("Análisis de proveedores y concentración del gasto")
 
     filtered = apply_global_filters(df)
     if filtered.empty:
@@ -47,14 +48,16 @@ def main():
             f"{top3 / total * 100:,.1f} %" if total != 0 else "0 %",
         )
 
-    st.subheader("Top 10 proveedores por gasto")
+    st.subheader("📊 Top 10 proveedores por gasto")
+    st.caption(f"Mostrando los 10 principales de {len(grp)} proveedores totales")
     st.bar_chart(grp.head(10))
 
-    st.subheader("Detalle por proveedor")
+    st.subheader("🔍 Detalle por proveedor")
     proveedor_sel = st.selectbox(
         "Selecciona un proveedor",
         options=grp.index.tolist(),
         index=0,
+        help="Selecciona un proveedor para ver el detalle de todas sus transacciones"
     )
 
     df_prov = filtered_clean[filtered_clean["Proveedor"] == proveedor_sel].copy()

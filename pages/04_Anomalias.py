@@ -10,6 +10,7 @@ def main():
     df = st.session_state["df"]
 
     st.title("Anomalías – Meses y pólizas atípicas")
+    st.caption("Detección de patrones inusuales en el gasto mensual y por póliza")
 
     filtered = apply_global_filters(df)
     if filtered.empty:

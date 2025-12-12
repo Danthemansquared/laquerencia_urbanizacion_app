@@ -9,6 +9,7 @@ def main():
     df = st.session_state["df"]
 
     st.title("Conceptos – ¿En qué se está yendo el dinero?")
+    st.caption("Análisis detallado del gasto por concepto de egreso")
 
     filtered = apply_global_filters(df)
     if filtered.empty:
@@ -48,7 +49,8 @@ def main():
             f"{top3 / total * 100:,.1f} %" if total != 0 else "0 %",
         )
 
-    st.subheader("Top conceptos por gasto")
+    st.subheader("📊 Top conceptos por gasto")
+    st.caption(f"Visualización de los {len(grp)} conceptos ordenados por monto total")
     st.bar_chart(grp)
 
     # Tabla resumen
@@ -83,10 +85,11 @@ def main():
     st.dataframe(df_concept_display, use_container_width=True)
 
     # Drill-down: seleccionar un concepto
-    st.subheader("Movimientos de un concepto específico")
+    st.subheader("🔍 Movimientos de un concepto específico")
     concepto_sel = st.selectbox(
         "Selecciona un Concepto Russildi",
         options=df_concept.index.tolist(),
+        help="Selecciona un concepto para ver el detalle de todos sus movimientos"
     )
 
     df_detalle = filtered_clean[filtered_clean["Concepto Russildi"] == concepto_sel].copy()
